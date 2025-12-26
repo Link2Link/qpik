@@ -103,8 +103,8 @@ void VelocityLimit::set_joint_velocity_limits(
     this->speed_limits_vec.block(nb, 0, nb, 1) = v2;
 }
 
-Constraint VelocityLimit::compute_qp_inequalities(
-    Configuration &config, float dt) {
+Constraint
+VelocityLimit::compute_qp_inequalities(Configuration &config, float dt) {
     Constraint constraint;
     constraint.G = this->G;
     constraint.h = this->speed_limits_vec;

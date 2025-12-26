@@ -49,7 +49,6 @@ struct FrameTask : public Task {
         this->weight.tail(3) = Eigen::Vector3d::Constant(weight);
     }
 
-
     void set_target(Eigen::Matrix<double, 4, 4> T_world_target) {
         if (!is_SE3_matrix(T_world_target)) {
             throw std::invalid_argument(
