@@ -10,6 +10,8 @@ FrameTask::FrameTask(
     : Task(name, weight, gain, lm_damping) {
     this->frame_name = frame_name;
     this->T_world_target = Eigen::Matrix<double, 4, 4>::Identity();
+    this->T_offset = Eigen::Matrix<double, 4, 4>::Identity();
+
 }
 
 bool FrameTask::is_SE3_matrix(const Eigen::Matrix<double, 4, 4> &T) {
@@ -35,20 +37,20 @@ Eigen::VectorXd FrameTask::compute_error(Configuration &config, float dt) {
     Eigen::Matrix4d T_current = config.FK(this->frame_name);
     // 误差 = T_world_target right-minus T_current
 
+    T_current = T_current * this->T_offset; // 偏移参考
+
     Eigen::VectorXd error = qpik::utils::right_minus(T_target, T_current);
 
-    // 使用 world local aligned
-    Eigen::Matrix3d R = T_current.block<3, 3>(0, 0);
-    Eigen::Matrix<double, 6, 6> Ad;
-    Ad.setZero();
-    Ad.block<3, 3>(0, 0) = R;
-    Ad.block<3, 3>(3, 3) = R;
-
-    return -Ad * error / dt;
+    // 使用local坐标系下的误差
+    return -error / dt;
 }
 
 Eigen::MatrixXd FrameTask::compute_jacobian(Configuration &config, float dt) {
-    return config.Ja(this->frame_name);
+    
+    // T_current_offset  伴随换系
+    
+    Eigen::MatrixXd Ad = utils::Adjoint(this->T_offset);
+    return Ad * config.Jb(this->frame_name);
 }
 
 } // namespace qpik

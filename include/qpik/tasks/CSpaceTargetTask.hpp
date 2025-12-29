@@ -28,6 +28,8 @@ struct CSpaceTargetTask : public Task {
         this->gain = gain;
     }
 
+
+
     void set_target(const Eigen::VectorXd &target) { this->target_q = target; }
 
     Eigen::VectorXd compute_error(Configuration &config, float dt) override;

@@ -56,6 +56,17 @@ struct FrameTask : public Task {
         }
         this->T_world_target = T_world_target;
     }
+    
+    // offset 是对在目标上加的偏移，例如name 是 tcplink，则offset是 T_tcplink_realref
+    // 此参数使得可以用于更改相对于tcplink的参考点
+    void set_offset(const Eigen::Matrix<double, 4, 4> &T_offset) {
+        if (!is_SE3_matrix(T_offset)) {
+            std::cout << "T_offset is not a valid SE(3) matrix" << std::endl;
+            return;
+        }
+        this->T_offset = T_offset;
+    }
+
 
     bool is_SE3_matrix(const Eigen::Matrix<double, 4, 4> &T);
 
@@ -64,6 +75,7 @@ struct FrameTask : public Task {
     Eigen::MatrixXd compute_jacobian(Configuration &config, float dt) override;
 
     Eigen::Matrix<double, 4, 4> T_world_target;
+    Eigen::Matrix<double, 4, 4> T_offset;
     std::string frame_name;
 };
 
