@@ -11,6 +11,11 @@ struct ConfigurationLimit : public Limit {
         Configuration &config,
         const std::map<std::string, Eigen::Vector2d> &joint_limits_config);
 
+    ConfigurationLimit(
+        std::string name,
+        Configuration &config);
+
+
     // 根据传入数据更新joint_limits_config、indices和joint_limits
     void set_joint_limits(
         const std::map<std::string, Eigen::Vector2d> &joint_limits_config);

@@ -2,14 +2,37 @@
 
 include(CMakeFindDependencyMacro)
 
-# 查找依赖
+# 查找依赖（按顺序查找，确保依赖关系正确）
+# 注意：如果某些依赖找不到，find_package 会失败
 find_dependency(Eigen3 REQUIRED)
 find_dependency(pinocchio REQUIRED)
-find_dependency(osqp)
-find_dependency(OsqpEigen)
+find_dependency(urdf REQUIRED)
+find_dependency(urdfdom_headers REQUIRED)
 
-# 包含目标文件
-include("${CMAKE_CURRENT_LIST_DIR}/qpikTargets.cmake")
+# 可选依赖
+find_dependency(osqp QUIET)
+find_dependency(OsqpEigen QUIET)
+
+# 包含目标文件（这会导入 qpik::qpik 目标）
+# 必须在查找依赖之后，但在检查组件之前
+set(_qpik_targets_file "${CMAKE_CURRENT_LIST_DIR}/qpikTargets.cmake")
+if(NOT EXISTS "${_qpik_targets_file}")
+    message(FATAL_ERROR 
+        "qpikTargets.cmake not found at: ${_qpik_targets_file}\n"
+        "Please ensure qpik is properly installed."
+    )
+endif()
+
+# 包含目标文件（这会创建 qpik::qpik 目标）
+include("${_qpik_targets_file}")
+
+# 验证目标是否已创建
+if(NOT TARGET qpik::qpik)
+    message(FATAL_ERROR 
+        "qpik::qpik target was not created after including qpikTargets.cmake\n"
+        "This indicates an installation problem."
+    )
+endif()
 
 # 检查所有必需组件
 check_required_components(qpik)

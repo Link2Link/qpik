@@ -26,11 +26,30 @@ include_directories(include)
 
 
 add_library(qpik SHARED ${SRC_FILES})
+
+# ============================================================================
+# 目标属性配置（关键：使其他项目可以使用 qpik::qpik）
+# ============================================================================
+
+# 设置公共头文件路径（必须！否则其他项目找不到头文件）
+target_include_directories(qpik
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+)
+
+# 设置 C++ 标准（传递给依赖项目）
+set_target_properties(qpik PROPERTIES
+    CXX_STANDARD 20
+    CXX_STANDARD_REQUIRED ON
+)
+
+# 链接依赖库（PUBLIC 确保依赖会传递给使用 qpik::qpik 的项目）
 target_link_libraries(qpik PUBLIC   
     osqp::osqp         
     OsqpEigen::OsqpEigen
     urdf::urdf
-  )
+)
 
 # ============================================================================
 # 安装配置
@@ -57,6 +76,7 @@ install(EXPORT qpikTargets
     NAMESPACE qpik::
     DESTINATION lib/cmake/qpik
 )
+# 这样，可以让其他工程利用 CMake 的 find_package 自动找到 qpik，并通过 target_link_libraries 使用 qpik::qpik
 
 # 创建配置文件供 find_package 使用
 include(CMakePackageConfigHelpers)

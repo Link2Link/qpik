@@ -12,6 +12,26 @@ ConfigurationLimit::ConfigurationLimit(
     this->set_joint_limits(joint_limits_config);
 }
 
+ConfigurationLimit::ConfigurationLimit(
+    std::string name,
+    Configuration &config)
+    : Limit(name) {
+    this->joint_names = config.joint_names;
+    this->joint_ids_map = config.joint_ids_map;
+
+    std::map<std::string, Eigen::Vector2d> joint_limits_config;
+    joint_limits_config.clear();
+    for (int i = 0; i < config.model_.nq; i++) {
+        std::string joint_name = config.joint_names[i];
+        Eigen::Vector2d joint_limit = Eigen::Vector2d::Zero(2);
+        joint_limit(0) = config.lower_limit(i);
+        joint_limit(1) = config.upper_limit(i);
+        joint_limits_config[joint_name] = joint_limit;
+    }
+    this->set_joint_limits(joint_limits_config);
+
+}
+
 void ConfigurationLimit::set_joint_limits(
     const std::map<std::string, Eigen::Vector2d> &joint_limits_config) {
     this->joint_limits_config = joint_limits_config;
