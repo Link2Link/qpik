@@ -3,13 +3,22 @@ project(qpik VERSION 0.1.0)
 
 set(CMAKE_CXX_STANDARD 20)
 
+if(DEFINED ENV{ROS_DISTRO})
+    set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} /opt/ros/$ENV{ROS_DISTRO})
+endif()
+
+
 # set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_BUILD_TYPE Release)
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
 
-
 find_package(pinocchio REQUIRED)
+message(STATUS "Pinocchio include dirs: ${PINOCCHIO_INCLUDE_DIRS}")
+message(STATUS "Pinocchio library dirs: ${PINOCCHIO_LIBRARY_DIRS}")
+message(STATUS "Pinocchio libraries: ${PINOCCHIO_LIBRARIES}")
+
+
 find_package(urdf REQUIRED)
 find_package(urdfdom_headers REQUIRED)
 include_directories(${PINOCCHIO_INCLUDE_DIRS})
