@@ -76,4 +76,8 @@ Eigen::VectorXd left_minus(
     const Eigen::Matrix<double, 4, 4> &T1,
     const Eigen::Matrix<double, 4, 4> &T2);
 
+Eigen::Matrix3d RotX(const double &theta);
+Eigen::Matrix3d RotY(const double &theta);
+Eigen::Matrix3d RotZ(const double &theta);
+
 } // namespace qpik::utils

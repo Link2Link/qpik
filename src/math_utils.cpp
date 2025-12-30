@@ -347,4 +347,29 @@ Eigen::VectorXd left_minus(
     return se3ToVec(MatrixLog6(result));
 }
 
+
+Eigen::Matrix3d RotX(const double &theta) {
+    Eigen::Matrix3d R;
+    R << 1, 0, 0,
+         0, cos(theta), -sin(theta),
+         0, sin(theta), cos(theta);
+    return R;
+}
+
+Eigen::Matrix3d RotY(const double &theta) {
+    Eigen::Matrix3d R;
+    R << cos(theta), 0, sin(theta),
+         0, 1, 0,
+         -sin(theta), 0, cos(theta);
+    return R;
+}
+
+Eigen::Matrix3d RotZ(const double &theta) {
+    Eigen::Matrix3d R;
+    R << cos(theta), -sin(theta), 0,
+         sin(theta), cos(theta), 0,
+         0, 0, 1;
+    return R;
+}
+
 } // namespace qpik::utils

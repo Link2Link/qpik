@@ -48,8 +48,7 @@ Eigen::VectorXd FrameTask::compute_error(Configuration &config, float dt) {
 Eigen::MatrixXd FrameTask::compute_jacobian(Configuration &config, float dt) {
     
     // T_current_offset  伴随换系
-    
-    Eigen::MatrixXd Ad = utils::Adjoint(this->T_offset);
+    Eigen::MatrixXd Ad = utils::Adjoint( utils::TransInv(this->T_offset));
     return Ad * config.Jb(this->frame_name);
 }
 
