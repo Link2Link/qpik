@@ -105,8 +105,14 @@ set(CPACK_PACKAGE_NAME "qpik")
 set(CPACK_PACKAGE_VENDOR "qpik")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "QP-based Inverse Kinematics Solver")
 set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
-set(CPACK_GENERATOR "TGZ;DEB;RPM")
+# 生成 TGZ 和 DEB 包
+set(CPACK_GENERATOR "TGZ;DEB")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "qpik")
+
+# 设置使用 DESTDIR，这样打包时不需要 root 权限
+# CPack 会将文件安装到临时目录，然后打包
+set(CPACK_SET_DESTDIR ON)
+
 # 可选：如果存在 LICENSE 和 README.md 文件，则包含它们
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
     set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
@@ -118,10 +124,5 @@ endif()
 # DEB 包配置
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "qpik")
 set(CPACK_DEBIAN_PACKAGE_SECTION "devel")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libeigen3-dev, libpinocchio-dev")
-
-# RPM 包配置
-set(CPACK_RPM_PACKAGE_GROUP "Development/Libraries")
-set(CPACK_RPM_PACKAGE_REQUIRES "eigen3-devel, pinocchio-devel")
 
 include(CPack)
