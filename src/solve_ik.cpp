@@ -188,6 +188,7 @@ int solve_qp_problem(QP_Problem &problem, Eigen::VectorXd &x) {
 
     OsqpEigen::Solver solver;
     int dim = os.H.rows(); // 变量维度
+    x = Eigen::VectorXd::Zero(dim);
     int nin = os.A.rows(); // 不等式约束维度
 
     solver.settings()->setWarmStart(false);
