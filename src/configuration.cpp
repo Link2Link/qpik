@@ -90,6 +90,15 @@ void Configuration::update(Eigen::VectorXd q) {
     this->update_kinematics();
 }
 
+void Configuration::update(Eigen::VectorXd q, Eigen::VectorXd v) {
+    this->update(q);
+    this->v = v;
+}
+
+void Configuration::update_velocity(Eigen::VectorXd v) {
+    this->v = v;
+}
+
 void Configuration::update_kinematics() {
     pin::forwardKinematics(this->model_, this->data_, this->q);
     pin::updateFramePlacements(this->model_, this->data_);

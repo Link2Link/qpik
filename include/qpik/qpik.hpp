@@ -15,6 +15,7 @@
 #include "qpik/limits/limit.hpp"
 #include "qpik/limits/velocity_limit.hpp"
 #include "qpik/limits/configuration_limit.hpp"
+#include "qpik/limits/acceleration_limit.hpp"
 #include "qpik/limits/collision_avoidance_limit.hpp"
 
 #include "qpik/constraints/dof_freezing_task.hpp"

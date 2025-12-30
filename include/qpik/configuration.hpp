@@ -37,6 +37,8 @@ struct Configuration {
 
     void init(const std::string &urdf_path, Eigen::VectorXd q);
     void update(Eigen::VectorXd q);
+    void update(Eigen::VectorXd q, Eigen::VectorXd v);
+    void update_velocity(Eigen::VectorXd v);
     // void update();
     void update_kinematics();
     Eigen::Matrix4d FK(std::string frame_name); // 正向运动学
