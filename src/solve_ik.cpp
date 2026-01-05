@@ -2,6 +2,10 @@
 
 namespace qpik {
 
+// 计算QP目标函数
+// 目标函数为所有任务的QP目标函数之和，加上LM型正则化项
+// H 为所有子任务H_i的和，c 为所有子任务c_i的和
+// H_i c_i 已经在子任务中进行了加权，这里只需要将它们相加即可
 Objective _compute_qp_objective(
     Configuration &config,
     const std::vector<BaseTask *> &tasks,
@@ -23,6 +27,8 @@ Objective _compute_qp_objective(
     return obj;
 }
 
+// 计算QP不等式约束
+// 将不同约束的G和h竖向拼接在一起
 void _compute_qp_inequalities(
     Configuration &config,
     const std::vector<Limit *> &limits,
@@ -53,6 +59,8 @@ void _compute_qp_inequalities(
     }
 }
 
+// 计算QP等式约束
+// 将不同约束的A和b竖向拼接在一起
 void _compute_qp_equalities(
     Configuration &config,
     const std::vector<Task *> &constraints,
@@ -86,6 +94,9 @@ void _compute_qp_equalities(
     }
 }
 
+// 构造QP问题
+// 给定配置、任务、限制、约束、时间步长和LM型正则化系数，构造QP问题
+// 返回标准QP问题对象，用于后续求解
 QP_Problem construct_qp_problem(
     Configuration &config,
     const std::vector<BaseTask *> &tasks,
@@ -113,6 +124,8 @@ QP_Problem construct_qp_problem(
     return problem;
 }
 
+// 构造QP问题，只有任务和不等式约束
+// 没有等式约束
 QP_Problem construct_qp_problem(
     Configuration &config,
     const std::vector<BaseTask *> &tasks,
@@ -124,6 +137,8 @@ QP_Problem construct_qp_problem(
         config, tasks, limits, constraints, dt, damping);
 }
 
+// 构造QP问题，只有任务
+// 没有不等式和等式约束
 QP_Problem construct_qp_problem(
     Configuration &config,
     const std::vector<BaseTask *> &tasks,
@@ -178,6 +193,7 @@ OSQP_Problem QP_Problem::to_osqp_problem(double eps) {
 }
 
 int solve_qp_problem(QP_Problem &problem, Eigen::VectorXd &x) {
+    // 将标准QP问题转换为OSQP问题
     OSQP_Problem os = problem.to_osqp_problem();
 
     // std::cout << "OSQP H: " << os.H << std::endl;
@@ -191,8 +207,8 @@ int solve_qp_problem(QP_Problem &problem, Eigen::VectorXd &x) {
     x = Eigen::VectorXd::Zero(dim);
     int nin = os.A.rows(); // 不等式约束维度
 
-    solver.settings()->setWarmStart(false);
-    solver.settings()->setVerbosity(false);
+    solver.settings()->setWarmStart(false); // 不使用warm start
+    solver.settings()->setVerbosity(false); // 不输出详细信息
     solver.data()->setNumberOfVariables(dim);
     solver.data()->setNumberOfConstraints(nin);
     Eigen::SparseMatrix<double> H_sparse = os.H.sparseView();
@@ -208,6 +224,7 @@ int solve_qp_problem(QP_Problem &problem, Eigen::VectorXd &x) {
         return -1;
     }
 
+    // 如果没有不等式约束，直接跳过设置不等式约束
     if (nin == 0) { goto solve; }
     if (!solver.data()->setLinearConstraintsMatrix(A_sparse)) {
         std::cerr << "Error setting constraint matrix" << std::endl;

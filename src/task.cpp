@@ -16,6 +16,7 @@ Objective Task::compute_qp_objective(Configuration &config, float dt) {
     Eigen::MatrixXd J = compute_jacobian(config, dt);
     Eigen::VectorXd e = compute_error(config, dt);
 
+    // 框架中使用的误差定义为目标-当前， 因此在这里需要加符号
     auto minus_gain_error = -this->gain * e;
 
     // Apply weights to Jacobian and error
@@ -29,6 +30,7 @@ Objective Task::compute_qp_objective(Configuration &config, float dt) {
     Eigen::MatrixXd eye_tg =
         Eigen::MatrixXd::Identity(config.model_.nv, config.model_.nv);
 
+    // 目标函数中的权重为 W^2
     // Levenberg-Marquardt (damped least squares) Hessian approximation
     Eigen::MatrixXd H = weighted_jacobian.transpose() * weighted_jacobian
                         + mu * eye_tg; // QP二次项 (nv, nv)
