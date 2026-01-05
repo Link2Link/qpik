@@ -1,7 +1,7 @@
 #pragma once
-#include <Eigen/Dense>
 #include "qpik/configuration.hpp"
 #include "qpik/limits/limit.hpp"
+#include <Eigen/Dense>
 
 namespace qpik {
 
@@ -21,6 +21,8 @@ struct VelocityLimit : public Limit {
     void set_joint_velocity_limits(
         const std::map<std::string, double> &joint_velocity_limits);
 
+    void set_scale(double scale) { this->scale = scale; }
+
     Constraint
     compute_qp_inequalities(Configuration &config, float dt) override;
 
@@ -32,6 +34,8 @@ struct VelocityLimit : public Limit {
     Eigen::MatrixXd G;
     Eigen::VectorXd speed_limits_vec;
     std::map<std::string, double> joint_velocity_limits;
+
+    double scale{1.0};
 };
 
 } // namespace qpik

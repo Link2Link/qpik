@@ -11,7 +11,6 @@ FrameTask::FrameTask(
     this->frame_name = frame_name;
     this->T_world_target = Eigen::Matrix<double, 4, 4>::Identity();
     this->T_offset = Eigen::Matrix<double, 4, 4>::Identity();
-
 }
 
 bool FrameTask::is_SE3_matrix(const Eigen::Matrix<double, 4, 4> &T) {
@@ -46,9 +45,8 @@ Eigen::VectorXd FrameTask::compute_error(Configuration &config, float dt) {
 }
 
 Eigen::MatrixXd FrameTask::compute_jacobian(Configuration &config, float dt) {
-    
     // T_current_offset  伴随换系
-    Eigen::MatrixXd Ad = utils::Adjoint( utils::TransInv(this->T_offset));
+    Eigen::MatrixXd Ad = utils::Adjoint(utils::TransInv(this->T_offset));
     return Ad * config.Jb(this->frame_name);
 }
 

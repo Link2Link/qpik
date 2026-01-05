@@ -56,7 +56,6 @@ void AccelerationLimit::set_joint_acceleration_limits(
         int joint_index = this->joint_ids_map[joint_name];
         this->indices.push_back(joint_index);
         this->max_accelerations.push_back(max_acceleration);
-
     }
 
     int nb = this->indices.size();
@@ -76,7 +75,6 @@ AccelerationLimit::compute_qp_inequalities(Configuration &config, float dt) {
     for (int i = 0; i < nb; i++) {
         G1(i, indices[i]) = 1.0;
         a1(i) = max_accelerations[i] * dt + config.v(indices[i]);
-
     }
 
     Eigen::MatrixXd G2 = Eigen::MatrixXd::Zero(nb, this->joint_names.size());
@@ -94,7 +92,6 @@ AccelerationLimit::compute_qp_inequalities(Configuration &config, float dt) {
     Eigen::VectorXd a = Eigen::VectorXd::Zero(2 * nb);
     a.block(0, 0, nb, 1) = a1;
     a.block(nb, 0, nb, 1) = a2;
-
 
     constraint.G = G;
     constraint.h = a;

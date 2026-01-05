@@ -1,7 +1,7 @@
 #pragma once
-#include <Eigen/Dense>
 #include "qpik/configuration.hpp"
 #include "qpik/limits/limit.hpp"
+#include <Eigen/Dense>
 namespace qpik {
 using Geom = std::string;
 using GeomSequence = std::vector<Geom>;

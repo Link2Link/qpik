@@ -1,5 +1,5 @@
-#include "qpik/configuration.hpp"
 #include "qpik/tasks/task.hpp"
+#include "qpik/configuration.hpp"
 
 namespace qpik {
 double Objective::value(Eigen::VectorXd dq) {

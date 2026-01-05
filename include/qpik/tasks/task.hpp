@@ -1,7 +1,7 @@
 #pragma once
+#include "qpik/configuration.hpp"
 #include "qpik/math_utils.hpp"
 #include <Eigen/Dense>
-#include "qpik/configuration.hpp"
 namespace qpik {
 
 struct Objective {

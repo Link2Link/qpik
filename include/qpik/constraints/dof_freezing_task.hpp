@@ -1,7 +1,7 @@
 #pragma once
-#include <Eigen/Dense>
 #include "qpik/configuration.hpp"
 #include "qpik/tasks/task.hpp"
+#include <Eigen/Dense>
 
 namespace qpik {
 

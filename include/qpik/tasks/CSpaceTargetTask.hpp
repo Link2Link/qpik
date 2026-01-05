@@ -1,7 +1,7 @@
 #pragma once
-#include <Eigen/Dense>
 #include "qpik/configuration.hpp"
 #include "qpik/tasks/task.hpp"
+#include <Eigen/Dense>
 
 namespace qpik {
 
@@ -27,8 +27,6 @@ struct CSpaceTargetTask : public Task {
         }
         this->gain = gain;
     }
-
-
 
     void set_target(const Eigen::VectorXd &target) { this->target_q = target; }
 

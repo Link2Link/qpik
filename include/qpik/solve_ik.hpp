@@ -1,7 +1,7 @@
 #pragma once
 #include "qpik/configuration.hpp"
-#include "qpik/tasks/task.hpp"
 #include "qpik/limits/limit.hpp"
+#include "qpik/tasks/task.hpp"
 
 #include <OsqpEigen/OsqpEigen.h>
 

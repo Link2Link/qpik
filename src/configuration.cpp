@@ -1,8 +1,8 @@
-#include <qpik/qpik.hpp>
 #include "qpik/configuration.hpp"
 #include "qpik/math_utils.hpp"
-#include <Eigen/Dense>
 #include "urdf_parser/urdf_parser.h"
+#include <Eigen/Dense>
+#include <qpik/qpik.hpp>
 
 namespace qpik {
 void Configuration::init(const std::string &urdf_path, Eigen::VectorXd q) {
@@ -158,6 +158,11 @@ void Configuration::print_info() {
     std::cout << "关节限位信息: " << std::endl;
     std::cout << "关节限位下限: " << this->lower_limit.transpose() << std::endl;
     std::cout << "关节限位上限: " << this->upper_limit.transpose() << std::endl;
+    std::cout
+        << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+        << std::endl;
+    std::cout << "关节最大速度: " << this->velocityLimit.transpose()
+              << std::endl;
     std::cout
         << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
         << std::endl;

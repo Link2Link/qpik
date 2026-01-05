@@ -1,11 +1,11 @@
 #ifndef CONFIGURATION_HPP
 #define CONFIGURATION_HPP
-#include <pinocchio/parsers/sample-models.hpp>
-#include <pinocchio/parsers/urdf.hpp>
+#include <pinocchio/algorithm/frames.hpp>
 #include <pinocchio/algorithm/joint-configuration.hpp>
 #include <pinocchio/algorithm/kinematics.hpp>
 #include <pinocchio/algorithm/rnea.hpp>
-#include <pinocchio/algorithm/frames.hpp>
+#include <pinocchio/parsers/sample-models.hpp>
+#include <pinocchio/parsers/urdf.hpp>
 
 namespace qpik {
 namespace pin = pinocchio;

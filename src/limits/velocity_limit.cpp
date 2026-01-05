@@ -107,7 +107,7 @@ Constraint
 VelocityLimit::compute_qp_inequalities(Configuration &config, float dt) {
     Constraint constraint;
     constraint.G = this->G;
-    constraint.h = this->speed_limits_vec;
+    constraint.h = this->speed_limits_vec * this->scale;
     return constraint;
 }
 

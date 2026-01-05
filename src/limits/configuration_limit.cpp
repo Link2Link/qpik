@@ -12,9 +12,7 @@ ConfigurationLimit::ConfigurationLimit(
     this->set_joint_limits(joint_limits_config);
 }
 
-ConfigurationLimit::ConfigurationLimit(
-    std::string name,
-    Configuration &config)
+ConfigurationLimit::ConfigurationLimit(std::string name, Configuration &config)
     : Limit(name) {
     this->joint_names = config.joint_names;
     this->joint_ids_map = config.joint_ids_map;
@@ -29,7 +27,6 @@ ConfigurationLimit::ConfigurationLimit(
         joint_limits_config[joint_name] = joint_limit;
     }
     this->set_joint_limits(joint_limits_config);
-
 }
 
 void ConfigurationLimit::set_joint_limits(

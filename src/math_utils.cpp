@@ -115,7 +115,8 @@ Eigen::MatrixXd MatrixExp6(const Eigen::MatrixXd &se3mat) {
     Eigen::MatrixXd m_ret(4, 4);
 
     // If negligible rotation, m_Ret = [[Identity, angular velocty ]]
-    //									[	0	 ,		1		   ]]
+    //									[	0	 ,		1
+    //]]
     if (NearZero(omgtheta.norm())) {
         // Reuse previous variables that have our required size
         se3mat_cut = Eigen::MatrixXd::Identity(3, 3);
@@ -347,28 +348,21 @@ Eigen::VectorXd left_minus(
     return se3ToVec(MatrixLog6(result));
 }
 
-
 Eigen::Matrix3d RotX(const double &theta) {
     Eigen::Matrix3d R;
-    R << 1, 0, 0,
-         0, cos(theta), -sin(theta),
-         0, sin(theta), cos(theta);
+    R << 1, 0, 0, 0, cos(theta), -sin(theta), 0, sin(theta), cos(theta);
     return R;
 }
 
 Eigen::Matrix3d RotY(const double &theta) {
     Eigen::Matrix3d R;
-    R << cos(theta), 0, sin(theta),
-         0, 1, 0,
-         -sin(theta), 0, cos(theta);
+    R << cos(theta), 0, sin(theta), 0, 1, 0, -sin(theta), 0, cos(theta);
     return R;
 }
 
 Eigen::Matrix3d RotZ(const double &theta) {
     Eigen::Matrix3d R;
-    R << cos(theta), -sin(theta), 0,
-         sin(theta), cos(theta), 0,
-         0, 0, 1;
+    R << cos(theta), -sin(theta), 0, sin(theta), cos(theta), 0, 0, 0, 1;
     return R;
 }
 
