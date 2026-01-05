@@ -145,6 +145,18 @@ Eigen::MatrixXd Configuration::Ja(std::string frame_name) {
     return qpik::utils::switch_w_v(Ja_pin);
 }
 
+Eigen::MatrixXd Configuration::Jb_dq(std::string frame_name, int idx) {
+    Eigen::VectorXd temp_v = Eigen::VectorXd::Zero(this->model_.nv);
+    temp_v(idx) = 1.0;
+    pin::computeJointJacobiansTimeVariation(
+        this->model_, this->data_, this->q, temp_v);
+    Eigen::MatrixXd dJ_pin = Eigen::MatrixXd::Zero(6, this->model_.nv);
+    pin::getFrameJacobianTimeVariation(
+        this->model_, this->data_, this->model_.getFrameId(frame_name),
+        pin::ReferenceFrame::LOCAL, dJ_pin);
+    return qpik::utils::switch_w_v(dJ_pin);
+}
+
 void Configuration::print_info() {
     std::cout
         << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"

@@ -115,7 +115,9 @@ Eigen::MatrixXd MatrixExp6(const Eigen::MatrixXd &se3mat) {
     Eigen::MatrixXd m_ret(4, 4);
 
     // If negligible rotation, m_Ret = [[Identity, angular velocty ]]
-    //									[	0	 ,
+    //									[
+    // 0
+    //,
     // 1
     //]]
     if (NearZero(omgtheta.norm())) {

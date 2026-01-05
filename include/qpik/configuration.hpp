@@ -50,6 +50,8 @@ struct Configuration {
     Eigen::MatrixXd
     Ja(std::string frame_name); // WORLD Local aligned 雅可比矩阵
 
+    Eigen::MatrixXd Jb_dq(std::string frame_name, int idx); // 求Jb对q_i的偏导
+
     bool check_limits(double tolerance = 1e-6); // 检查关节是否在限位范围内
 
     Eigen::VectorXd integrate(Eigen::VectorXd v, float dt);
