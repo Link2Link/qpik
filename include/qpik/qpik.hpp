@@ -8,11 +8,12 @@
 #include <qpik/configuration.hpp>
 #include <qpik/utils.hpp>
 
-#include <qpik/tasks/task.hpp>
 #include <qpik/tasks/CSpaceTargetTask.hpp>
 #include <qpik/tasks/damping_task.hpp>
 #include <qpik/tasks/frame_task.hpp>
+#include <qpik/tasks/relative_frame_task.hpp>
 #include <qpik/tasks/singular_avoid_task.hpp>
+#include <qpik/tasks/task.hpp>
 
 #include "qpik/limits/acceleration_limit.hpp"
 #include "qpik/limits/collision_avoidance_limit.hpp"
