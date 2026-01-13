@@ -168,16 +168,12 @@ void Configuration::print_info() {
         << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
         << std::endl;
     std::cout << "关节限位信息: " << std::endl;
-    std::cout << "关节限位下限: " << this->lower_limit.transpose() << std::endl;
-    std::cout << "关节限位上限: " << this->upper_limit.transpose() << std::endl;
-    std::cout
-        << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-        << std::endl;
-    std::cout << "关节最大速度: " << this->velocityLimit.transpose()
-              << std::endl;
-    std::cout
-        << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-        << std::endl;
+
+    for (int i = 0; i < this->nq; ++i) {
+        std::cout << "关节" << this->joint_names[i] << "限位: ["
+                  << this->lower_limit(i) << ", " << this->upper_limit(i) << "]"
+                  << std::endl;
+    }
 }
 
 void Configuration::load_collision_objects_from_urdf(
