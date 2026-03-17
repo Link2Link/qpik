@@ -3,44 +3,42 @@
 
 namespace qpik {
 double Objective::value(Eigen::VectorXd dq) {
-    double qHq = 0.5 * dq.transpose() * H * dq;
-    double cq = c.transpose() * dq;
-    return qHq + cq;
+  double qHq = 0.5 * dq.transpose() * H * dq;
+  double cq = c.transpose() * dq;
+  return qHq + cq;
 }
 
-Eigen::VectorXd Objective::gradient(Eigen::VectorXd dq) {
-    return H * dq + c;
-}
+Eigen::VectorXd Objective::gradient(Eigen::VectorXd dq) { return H * dq + c; }
 
 Objective Task::compute_qp_objective(Configuration &config, float dt) {
-    Eigen::MatrixXd J = compute_jacobian(config, dt);
-    Eigen::VectorXd e = compute_error(config, dt);
+  Eigen::MatrixXd J = compute_jacobian(config, dt);
+  Eigen::VectorXd e = compute_error(config, dt);
 
-    // 框架中使用的误差定义为目标-当前， 因此在这里需要加符号
-    auto minus_gain_error = -this->gain * e;
+  // 框架中使用的误差定义为目标-当前， 因此在这里需要加符号
+  auto minus_gain_error = -this->gain * e;
 
-    // Apply weights to Jacobian and error
-    Eigen::MatrixXd W = this->weight.asDiagonal();
+  // Apply weights to Jacobian and error
+  Eigen::MatrixXd W = this->weight.asDiagonal();
 
-    Eigen::MatrixXd weighted_jacobian = W * J;
-    Eigen::VectorXd weighted_error = W * minus_gain_error;
+  Eigen::MatrixXd weighted_jacobian = W * J;
+  Eigen::VectorXd weighted_error = W * minus_gain_error;
 
-    // LM型正则化系数，随误差变大而增大
-    double mu = this->lm_damping * weighted_error.transpose() * weighted_error;
-    Eigen::MatrixXd eye_tg =
-        Eigen::MatrixXd::Identity(config.model_.nv, config.model_.nv);
+  // LM型正则化系数，随误差变大而增大
+  double mu = this->lm_damping * weighted_error.transpose() * weighted_error;
+  Eigen::MatrixXd eye_tg =
+      Eigen::MatrixXd::Identity(config.model_.nv, config.model_.nv);
 
-    // 目标函数中的权重为 W^2
-    // Levenberg-Marquardt (damped least squares) Hessian approximation
-    Eigen::MatrixXd H = weighted_jacobian.transpose() * weighted_jacobian
-                        + mu * eye_tg; // QP二次项 (nv, nv)
-    Eigen::VectorXd c =
-        -weighted_error.transpose() * weighted_jacobian; // QP一次项 (nv, )
+  // 目标函数中的权重为 W^2
+  // Levenberg-Marquardt (damped least squares) Hessian approximation
+  Eigen::MatrixXd H =
+      weighted_jacobian.transpose() * J + 0.0001 * eye_tg; // QP二次项 (nv, nv)
+  Eigen::VectorXd c =
+      -weighted_jacobian.transpose() * minus_gain_error; // QP一次项 (nv, )
 
-    Objective obj;
-    obj.H = H;
-    obj.c = c;
-    return obj;
+  Objective obj;
+  obj.H = H;
+  obj.c = c;
+  return obj;
 }
 
 } // namespace qpik

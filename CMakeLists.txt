@@ -13,11 +13,23 @@ set(CMAKE_BUILD_TYPE Release)
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
 
+
+
 find_package(pinocchio REQUIRED)
 message(STATUS "Pinocchio include dirs: ${PINOCCHIO_INCLUDE_DIRS}")
 message(STATUS "Pinocchio library dirs: ${PINOCCHIO_LIBRARY_DIRS}")
 message(STATUS "Pinocchio libraries: ${PINOCCHIO_LIBRARIES}")
 
+find_package(fcl REQUIRED)
+if(TARGET fcl::fcl)
+    set(FCL_LIB_TARGET fcl::fcl)
+elseif(TARGET fcl)
+    set(FCL_LIB_TARGET fcl)
+elseif(TARGET FCL::FCL)
+    set(FCL_LIB_TARGET FCL::FCL)
+else()
+    message(FATAL_ERROR "FCL target not found after find_package(fcl).")
+endif()
 
 find_package(urdf REQUIRED)
 find_package(urdfdom_headers REQUIRED)
@@ -58,7 +70,14 @@ target_link_libraries(qpik PUBLIC
     osqp::osqp         
     OsqpEigen::OsqpEigen
     urdf::urdf
+    ${FCL_LIB_TARGET}
 )
+
+# ============================================================================
+# Demo 可执行文件
+# ============================================================================
+add_executable(qpik_demo demo/demo.cpp)
+target_link_libraries(qpik_demo PRIVATE qpik ${FCL_LIB_TARGET})
 
 # ============================================================================
 # 安装配置

@@ -38,8 +38,8 @@ Eigen::Matrix3d TransToR(const Eigen::MatrixXd &);
 
 Eigen::Vector3d TransTop(const Eigen::MatrixXd &);
 
-Eigen::MatrixXd FKinSpace(
-    const Eigen::MatrixXd &, const Eigen::MatrixXd &, const Eigen::VectorXd &);
+Eigen::MatrixXd FKinSpace(const Eigen::MatrixXd &, const Eigen::MatrixXd &,
+                          const Eigen::VectorXd &);
 
 Eigen::MatrixXd JacobianSpace(const Eigen::MatrixXd &, const Eigen::MatrixXd &);
 
@@ -63,18 +63,15 @@ Eigen::MatrixXd pinv(Eigen::MatrixXd A);
 
 double SO3_err(Eigen::Matrix3d R1, Eigen::Matrix3d R2);
 
-double SE3_err(
-    const Eigen::Matrix<double, 4, 4> &T1,
-    const Eigen::Matrix<double, 4, 4> &T2);
+double SE3_err(const Eigen::Matrix<double, 4, 4> &T1,
+               const Eigen::Matrix<double, 4, 4> &T2);
 
 Eigen::MatrixXd switch_w_v(Eigen::MatrixXd in);
 
-Eigen::VectorXd right_minus(
-    const Eigen::Matrix<double, 4, 4> &T1,
-    const Eigen::Matrix<double, 4, 4> &T2);
-Eigen::VectorXd left_minus(
-    const Eigen::Matrix<double, 4, 4> &T1,
-    const Eigen::Matrix<double, 4, 4> &T2);
+Eigen::VectorXd right_minus(const Eigen::Matrix<double, 4, 4> &T1,
+                            const Eigen::Matrix<double, 4, 4> &T2);
+Eigen::VectorXd left_minus(const Eigen::Matrix<double, 4, 4> &T1,
+                           const Eigen::Matrix<double, 4, 4> &T2);
 
 Eigen::Matrix3d RotX(const double &theta);
 Eigen::Matrix3d RotY(const double &theta);

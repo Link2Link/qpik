@@ -6,258 +6,243 @@ namespace qpik {
 // 目标函数为所有任务的QP目标函数之和，加上LM型正则化项
 // H 为所有子任务H_i的和，c 为所有子任务c_i的和
 // H_i c_i 已经在子任务中进行了加权，这里只需要将它们相加即可
-Objective _compute_qp_objective(
-    Configuration &config,
-    const std::vector<BaseTask *> &tasks,
-    float dt,
-    float damping) {
-    int nv = config.model_.nv;
-    Eigen::MatrixXd H = Eigen::MatrixXd::Zero(nv, nv);
-    Eigen::VectorXd c = Eigen::VectorXd::Zero(nv);
-    for (const auto &task : tasks) {
-        Objective obj = task->compute_qp_objective(config, dt);
-        H += obj.H;
-        c += obj.c;
-    }
-    H += damping * Eigen::MatrixXd::Identity(nv, nv); // LM型正则化
+Objective _compute_qp_objective(Configuration &config,
+                                const std::vector<BaseTask *> &tasks, float dt,
+                                float damping) {
+  int nv = config.model_.nv;
+  Eigen::MatrixXd H = Eigen::MatrixXd::Zero(nv, nv);
+  Eigen::VectorXd c = Eigen::VectorXd::Zero(nv);
+  for (const auto &task : tasks) {
+    Objective obj = task->compute_qp_objective(config, dt);
+    H += obj.H;
+    c += obj.c;
+  }
+  H += damping * Eigen::MatrixXd::Identity(nv, nv); // LM型正则化
 
-    Objective obj;
-    obj.H = H;
-    obj.c = c;
-    return obj;
+  Objective obj;
+  obj.H = H;
+  obj.c = c;
+  return obj;
 }
 
 // 计算QP不等式约束
 // 将不同约束的G和h竖向拼接在一起
-void _compute_qp_inequalities(
-    Configuration &config,
-    const std::vector<Limit *> &limits,
-    float dt,
-    Eigen::MatrixXd &G,
-    Eigen::VectorXd &h) {
-    int nv = config.model_.nv;
+void _compute_qp_inequalities(Configuration &config,
+                              const std::vector<Limit *> &limits, float dt,
+                              Eigen::MatrixXd &G, Eigen::VectorXd &h) {
+  int nv = config.model_.nv;
 
-    G.resize(0, config.model_.nv); // 确保G和h初始为零行
-    h.resize(0);
-    for (const auto &limit : limits) {
-        Constraint constraint = limit->compute_qp_inequalities(config, dt);
-        // 竖向拼接G和h
-        int old_rows = G.rows();
-        int add_rows = constraint.G.rows();
-        if (add_rows > 0) {
-            Eigen::MatrixXd newG(G.rows() + constraint.G.rows(), G.cols());
-            Eigen::VectorXd newh(h.size() + constraint.h.size());
-            if (old_rows > 0) {
-                newG.topRows(old_rows) = G;
-                newh.head(h.size()) = h;
-            }
-            newG.bottomRows(add_rows) = constraint.G;
-            newh.tail(constraint.h.size()) = constraint.h;
-            G = newG;
-            h = newh;
-        }
+  G.resize(0, config.model_.nv); // 确保G和h初始为零行
+  h.resize(0);
+  for (const auto &limit : limits) {
+    Constraint constraint = limit->compute_qp_inequalities(config, dt);
+    // 竖向拼接G和h
+    int old_rows = G.rows();
+    int add_rows = constraint.G.rows();
+    if (add_rows > 0) {
+      Eigen::MatrixXd newG(G.rows() + constraint.G.rows(), G.cols());
+      Eigen::VectorXd newh(h.size() + constraint.h.size());
+      if (old_rows > 0) {
+        newG.topRows(old_rows) = G;
+        newh.head(h.size()) = h;
+      }
+      newG.bottomRows(add_rows) = constraint.G;
+      newh.tail(constraint.h.size()) = constraint.h;
+      G = newG;
+      h = newh;
     }
+  }
 }
 
 // 计算QP等式约束
 // 将不同约束的A和b竖向拼接在一起
-void _compute_qp_equalities(
-    Configuration &config,
-    const std::vector<Task *> &constraints,
-    float dt,
-    Eigen::MatrixXd &A,
-    Eigen::VectorXd &b) {
-    int nv = config.model_.nv;
-    A.resize(0, config.model_.nv);
-    b.resize(0);
-    for (const auto &task : constraints) {
-        Eigen::MatrixXd jacobian = task->compute_jacobian(config, dt);
-        Eigen::VectorXd feedback =
-            -task->gain * task->compute_error(config, dt);
+void _compute_qp_equalities(Configuration &config,
+                            const std::vector<Task *> &constraints, float dt,
+                            Eigen::MatrixXd &A, Eigen::VectorXd &b) {
+  int nv = config.model_.nv;
+  A.resize(0, config.model_.nv);
+  b.resize(0);
+  for (const auto &task : constraints) {
+    Eigen::MatrixXd jacobian = task->compute_jacobian(config, dt);
+    Eigen::VectorXd feedback = -task->gain * task->compute_error(config, dt);
 
-        int jacobian_rows = jacobian.rows();
-        int old_rows = A.rows();
+    int jacobian_rows = jacobian.rows();
+    int old_rows = A.rows();
 
-        // 竖向拼接A和b
-        if (jacobian_rows > 0) {
-            Eigen::MatrixXd newA(old_rows + jacobian_rows, A.cols());
-            Eigen::VectorXd newb(b.size() + feedback.size());
-            if (old_rows > 0) {
-                newA.topRows(old_rows) = A;
-                newb.head(b.size()) = b;
-            }
-            newA.bottomRows(jacobian_rows) = jacobian;
-            newb.tail(feedback.size()) = feedback;
-            A = newA;
-            b = newb;
-        }
+    // 竖向拼接A和b
+    if (jacobian_rows > 0) {
+      Eigen::MatrixXd newA(old_rows + jacobian_rows, A.cols());
+      Eigen::VectorXd newb(b.size() + feedback.size());
+      if (old_rows > 0) {
+        newA.topRows(old_rows) = A;
+        newb.head(b.size()) = b;
+      }
+      newA.bottomRows(jacobian_rows) = jacobian;
+      newb.tail(feedback.size()) = feedback;
+      A = newA;
+      b = newb;
     }
+  }
 }
 
 // 构造QP问题
 // 给定配置、任务、限制、约束、时间步长和LM型正则化系数，构造QP问题
 // 返回标准QP问题对象，用于后续求解
-QP_Problem construct_qp_problem(
-    Configuration &config,
-    const std::vector<BaseTask *> &tasks,
-    const std::vector<Limit *> &limits,
-    const std::vector<Task *> &constraints,
-    float dt,
-    float damping) {
-    QP_Problem problem;
+QP_Problem construct_qp_problem(Configuration &config,
+                                const std::vector<BaseTask *> &tasks,
+                                const std::vector<Limit *> &limits,
+                                const std::vector<Task *> &constraints,
+                                float dt, float damping) {
+  QP_Problem problem;
 
-    // 计算目标函数
-    Objective obj = _compute_qp_objective(config, tasks, dt, damping);
-    problem.H = obj.H;
-    problem.c = obj.c;
+  // 计算目标函数
+  Objective obj = _compute_qp_objective(config, tasks, dt, damping);
+  problem.H = obj.H;
+  problem.c = obj.c;
 
-    // 计算不等式约束
-    if (!limits.empty()) {
-        _compute_qp_inequalities(config, limits, dt, problem.G, problem.h);
-    }
+  // 计算不等式约束
+  if (!limits.empty()) {
+    _compute_qp_inequalities(config, limits, dt, problem.G, problem.h);
+  }
 
-    // 计算等式约束
-    if (!constraints.empty()) {
-        _compute_qp_equalities(config, constraints, dt, problem.A, problem.b);
-    }
+  // 计算等式约束
+  if (!constraints.empty()) {
+    _compute_qp_equalities(config, constraints, dt, problem.A, problem.b);
+  }
 
-    return problem;
+  return problem;
 }
 
 // 构造QP问题，只有任务和不等式约束
 // 没有等式约束
-QP_Problem construct_qp_problem(
-    Configuration &config,
-    const std::vector<BaseTask *> &tasks,
-    const std::vector<Limit *> &limits,
-    float dt,
-    float damping) {
-    std::vector<Task *> constraints;
-    return construct_qp_problem(
-        config, tasks, limits, constraints, dt, damping);
+QP_Problem construct_qp_problem(Configuration &config,
+                                const std::vector<BaseTask *> &tasks,
+                                const std::vector<Limit *> &limits, float dt,
+                                float damping) {
+  std::vector<Task *> constraints;
+  return construct_qp_problem(config, tasks, limits, constraints, dt, damping);
 }
 
 // 构造QP问题，只有任务
 // 没有不等式和等式约束
-QP_Problem construct_qp_problem(
-    Configuration &config,
-    const std::vector<BaseTask *> &tasks,
-    float dt,
-    float damping) {
-    std::vector<Task *> constraints;
-    std::vector<Limit *> limits;
-    return construct_qp_problem(
-        config, tasks, limits, constraints, dt, damping);
+QP_Problem construct_qp_problem(Configuration &config,
+                                const std::vector<BaseTask *> &tasks, float dt,
+                                float damping) {
+  std::vector<Task *> constraints;
+  std::vector<Limit *> limits;
+  return construct_qp_problem(config, tasks, limits, constraints, dt, damping);
 }
 
 OSQP_Problem QP_Problem::to_osqp_problem(double eps) {
-    OSQP_Problem os;
-    os.H = this->H;
-    os.c = this->c;
+  OSQP_Problem os;
+  os.H = this->H;
+  os.c = this->c;
 
-    int nv = this->H.rows();
-    int nin = this->G.rows();
-    int neq = this->A.rows();
+  int nv = this->H.rows();
+  int nin = this->G.rows();
+  int neq = this->A.rows();
 
-    int n = nin + neq;
+  int n = nin + neq;
 
-    if (n == 0) {
-        // 无约束
-        return os;
-    }
-
-    Eigen::MatrixXd A = Eigen::MatrixXd::Zero(n, nv);
-    Eigen::VectorXd lb =
-        Eigen::VectorXd::Constant(n, -std::numeric_limits<double>::infinity());
-    Eigen::VectorXd ub =
-        Eigen::VectorXd::Constant(n, std::numeric_limits<double>::infinity());
-
-    if (nin > 0) {
-        // 不等式约束
-        A.topRows(nin) = this->G;
-        ub.head(nin) = this->h;
-    }
-
-    if (neq > 0) {
-        // 等式约束
-        A.bottomRows(neq) = this->A;
-        ub.tail(neq) = this->b + Eigen::VectorXd::Constant(neq, eps);
-        lb.tail(neq) = this->b - Eigen::VectorXd::Constant(neq, eps);
-    }
-
-    os.A = A;
-    os.lb = lb;
-    os.ub = ub;
-
+  if (n == 0) {
+    // 无约束
     return os;
+  }
+
+  Eigen::MatrixXd A = Eigen::MatrixXd::Zero(n, nv);
+  Eigen::VectorXd lb =
+      Eigen::VectorXd::Constant(n, -std::numeric_limits<double>::infinity());
+  Eigen::VectorXd ub =
+      Eigen::VectorXd::Constant(n, std::numeric_limits<double>::infinity());
+
+  if (nin > 0) {
+    // 不等式约束
+    A.topRows(nin) = this->G;
+    ub.head(nin) = this->h;
+  }
+
+  if (neq > 0) {
+    // 等式约束
+    A.bottomRows(neq) = this->A;
+    ub.tail(neq) = this->b + Eigen::VectorXd::Constant(neq, eps);
+    lb.tail(neq) = this->b - Eigen::VectorXd::Constant(neq, eps);
+  }
+
+  os.A = A;
+  os.lb = lb;
+  os.ub = ub;
+
+  return os;
 }
 
 int solve_qp_problem(QP_Problem &problem, Eigen::VectorXd &x) {
-    // 将标准QP问题转换为OSQP问题
-    OSQP_Problem os = problem.to_osqp_problem();
+  // 将标准QP问题转换为OSQP问题
+  OSQP_Problem os = problem.to_osqp_problem();
 
-    // std::cout << "OSQP H: " << os.H << std::endl;
-    // std::cout << "OSQP c: " << os.c.transpose() << std::endl;
-    // std::cout << "OSQP A: " << os.A << std::endl;
-    // std::cout << "OSQP lb: " << os.lb.transpose() << std::endl;
-    // std::cout << "OSQP ub: " << os.ub.transpose() << std::endl;
+  // std::cout << "OSQP H: " << os.H << std::endl;
+  // std::cout << "OSQP c: " << os.c.transpose() << std::endl;
+  // std::cout << "OSQP A: " << os.A << std::endl;
+  // std::cout << "OSQP lb: " << os.lb.transpose() << std::endl;
+  // std::cout << "OSQP ub: " << os.ub.transpose() << std::endl;
 
-    OsqpEigen::Solver solver;
-    int dim = os.H.rows(); // 变量维度
-    x = Eigen::VectorXd::Zero(dim);
-    int nin = os.A.rows(); // 不等式约束维度
+  OsqpEigen::Solver solver;
+  int dim = os.H.rows(); // 变量维度
+  x = Eigen::VectorXd::Zero(dim);
+  int nin = os.A.rows(); // 不等式约束维度
 
-    solver.settings()->setWarmStart(false); // 不使用warm start
-    solver.settings()->setVerbosity(false); // 不输出详细信息
-    solver.data()->setNumberOfVariables(dim);
-    solver.data()->setNumberOfConstraints(nin);
-    Eigen::SparseMatrix<double> H_sparse = os.H.sparseView();
-    Eigen::SparseMatrix<double> A_sparse = os.A.sparseView();
+  solver.settings()->setWarmStart(false); // 不使用warm start
+  solver.settings()->setVerbosity(false); // 不输出详细信息
+  solver.data()->setNumberOfVariables(dim);
+  solver.data()->setNumberOfConstraints(nin);
+  Eigen::SparseMatrix<double> H_sparse = os.H.sparseView();
+  Eigen::SparseMatrix<double> A_sparse = os.A.sparseView();
 
-    if (!solver.data()->setHessianMatrix(H_sparse)) {
-        std::cerr << "Error setting Hessian matrix" << std::endl;
-        return -1;
-    }
+  if (!solver.data()->setHessianMatrix(H_sparse)) {
+    std::cerr << "Error setting Hessian matrix" << std::endl;
+    return -1;
+  }
 
-    if (!solver.data()->setGradient(os.c)) {
-        std::cerr << "Error setting gradient vector" << std::endl;
-        return -1;
-    }
+  if (!solver.data()->setGradient(os.c)) {
+    std::cerr << "Error setting gradient vector" << std::endl;
+    return -1;
+  }
 
-    // 如果没有不等式约束，直接跳过设置不等式约束
-    if (nin == 0) { goto solve; }
-    if (!solver.data()->setLinearConstraintsMatrix(A_sparse)) {
-        std::cerr << "Error setting constraint matrix" << std::endl;
-        return -1;
-    }
+  // 如果没有不等式约束，直接跳过设置不等式约束
+  if (nin == 0) {
+    goto solve;
+  }
+  if (!solver.data()->setLinearConstraintsMatrix(A_sparse)) {
+    std::cerr << "Error setting constraint matrix" << std::endl;
+    return -1;
+  }
 
-    if (!solver.data()->setLowerBound(os.lb)) {
-        std::cerr << "Error setting lower bounds" << std::endl;
-        return -1;
-    }
+  if (!solver.data()->setLowerBound(os.lb)) {
+    std::cerr << "Error setting lower bounds" << std::endl;
+    return -1;
+  }
 
-    if (!solver.data()->setUpperBound(os.ub)) {
-        std::cerr << "Error setting upper bounds" << std::endl;
-        return -1;
-    }
+  if (!solver.data()->setUpperBound(os.ub)) {
+    std::cerr << "Error setting upper bounds" << std::endl;
+    return -1;
+  }
 
 solve:
-    if (!solver.initSolver()) {
-        std::cerr << "Solver initialization failed" << std::endl;
-        return -1;
-    }
+  if (!solver.initSolver()) {
+    std::cerr << "Solver initialization failed" << std::endl;
+    return -1;
+  }
 
-    if (solver.solveProblem() != OsqpEigen::ErrorExitFlag::NoError) {
-        std::cerr << "Solver failed" << std::endl;
-        return -1;
-    }
+  if (solver.solveProblem() != OsqpEigen::ErrorExitFlag::NoError) {
+    std::cerr << "Solver failed" << std::endl;
+    return -1;
+  }
 
-    auto temp = solver.getSolution();
-    x = temp;
+  auto temp = solver.getSolution();
+  x = temp;
 
-    solver.clearSolver();
+  solver.clearSolver();
 
-    return 0;
+  return 0;
 }
 
 } // namespace qpik
